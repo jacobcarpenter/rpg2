@@ -1,5 +1,4 @@
 function setUpEncounter () {
-    let index = 0
     sceneName = "beforeEnounter"
     party.setFlag(SpriteFlag.Invisible, true)
     tiles.setTilemap(tiles.createTilemap(hex`1000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000`, img`
@@ -144,13 +143,12 @@ function setUpEncounter () {
         . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
         . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
         `)
-    focusedPartyMember = 0
     for (let index = 0; index <= partyMembers.length - 1; index++) {
         createdCharacter = partyMembers[index]
         createdCharacter.setPosition(136, 48 + 18 * index)
         createdCharacter.setFlag(SpriteFlag.Invisible, false)
     }
-    partyMembers[index].x += -6
+    updateFocusedPartyMember(0)
     enemy1 = sprites.create(img`
         . . . f f f f f . . . . . 
         . f f f f f f f f f . . . 
@@ -205,6 +203,12 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     if (sceneName == "encounter") {
         encounterMenuOption = (encounterMenuOption + (encounterMenuLength - 1)) % encounterMenuLength
         cursor.top = menu.top + encounterMenuOption * 7
+    }
+})
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (sceneName == "encounter") {
+        // TODO: handle downed/incapacitated party members; skip over them when updating.
+        updateFocusedPartyMember((focusedPartyMember + 1) % partyMembers.length)
     }
 })
 function getMoveCommand (toMove: Sprite, direction: number) {
@@ -263,6 +267,23 @@ function drawEncounterMenu () {
         `, SpriteKind.Player)
     cursor.top = menu.top + encounterMenuOption * 8
     cursor.right = menu.left
+}
+function updateFocusedPartyMember (focusedIndex: number) {
+    focusedPartyMember = focusedIndex
+    for (let index = 0; index <= partyMembers.length - 1; index++) {
+        createdCharacter = partyMembers[index]
+        if (index == focusedPartyMember) {
+            focusedAnimationCommandText = "L 130 " + createdCharacter.y
+        } else {
+            focusedAnimationCommandText = "L 136 " + createdCharacter.y
+        }
+        animation.runMovementAnimation(
+        createdCharacter,
+        focusedAnimationCommandText,
+        200,
+        false
+        )
+    }
 }
 function initPartyMembers () {
     partyMembers = []
@@ -334,6 +355,8 @@ function moveSprite (toMove: Sprite, direction: number) {
     }
 }
 let moveCommandString = ""
+let focusedAnimationCommandText = ""
+let focusedPartyMember = 0
 let menu: Sprite = null
 let cursor: Sprite = null
 let encounterMenuLength = 0
@@ -342,7 +365,6 @@ let enemy2: Sprite = null
 let enemy1: Sprite = null
 let createdCharacter: Sprite = null
 let partyMembers: Sprite[] = []
-let focusedPartyMember = 0
 let nextEncounterTickCount = 0
 let party: Sprite = null
 let sceneName = ""
