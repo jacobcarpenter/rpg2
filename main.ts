@@ -205,10 +205,15 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
         cursor.top = menu.top + encounterMenuOption * 7
     }
 })
+controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (sceneName == "encounter") {
+        updateFocusedPartyMember(Math.max(focusedPartyMember - 1, 0))
+    }
+})
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (sceneName == "encounter") {
         // TODO: handle downed/incapacitated party members; skip over them when updating.
-        updateFocusedPartyMember((focusedPartyMember + 1) % partyMembers.length)
+        updateFocusedPartyMember(focusedPartyMember + 1)
     }
 })
 function getMoveCommand (toMove: Sprite, direction: number) {
